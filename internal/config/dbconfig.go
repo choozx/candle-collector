@@ -27,8 +27,8 @@ func CloseDB() {
 }
 
 func getDBUrl() *string {
-	id := "arc_admin"
-	password := "1qw2!QW@"
+	id := "dale"
+	password := "0000"
 	host := "localhost"
 	port := "20003"
 
