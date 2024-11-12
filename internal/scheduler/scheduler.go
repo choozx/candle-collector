@@ -1,8 +1,10 @@
-package candleService
+package scheduler
 
 import (
-	"candle-collector/internal/model"
-	"candle-collector/internal/repository"
+	"candle-collector/internal/config"
+	"candle-collector/internal/model/binance"
+	"candle-collector/internal/model/candle"
+	"candle-collector/internal/model/symbols"
 	"candle-collector/internal/utils"
 	"encoding/json"
 	"fmt"
@@ -14,28 +16,30 @@ import (
 	"time"
 )
 
+const MaxUpdateCandleCount = 500
+
 func CandleUpdate() {
-	for _, symbol := range model.Symbols {
+	for _, symbol := range symbols.Symbols {
 		GetSymbolList(symbol)
 	}
 }
 
-func GetSymbolList(symbol model.Symbol) {
+func GetSymbolList(symbol symbols.Symbol) {
 	now := utils.NowMilliSecond()
-	lastCandleOpenTime := repository.GetLastCandleOpenTime(symbol)
+	lastCandleOpenTime := getLastCandleOpenTime(symbol)
 	if lastCandleOpenTime == 0 {
-		lastCandleOpenTime = utils.Minus(now, (model.MaxUpdateCandleCount+2)*time.Minute)
+		lastCandleOpenTime = utils.Minus(now, (MaxUpdateCandleCount+2)*time.Minute)
 	}
 	startTime := utils.Add(lastCandleOpenTime, time.Minute)
 	endTime := utils.Minus(now, time.Minute)
 
 	updateCandleCount := utils.BetweenMinuit(startTime, endTime)
-	if updateCandleCount > model.MaxUpdateCandleCount {
+	if updateCandleCount > MaxUpdateCandleCount {
 		// 최대갯수를 딱 맞추기 위해서는 response에 시작시간 캔들도 포함이기 때문에 1을 빼줘야됨
-		endTime = utils.Add(startTime, (model.MaxUpdateCandleCount-1)*time.Minute)
+		endTime = utils.Add(startTime, (MaxUpdateCandleCount-1)*time.Minute)
 	}
 
-	u, err := url.Parse(model.BaseUrl + model.CandlesUrl)
+	u, err := url.Parse(binance.BaseUrl + binance.CandlesUrl)
 	if err != nil {
 		fmt.Println("Error parsing URL:", err)
 		return
@@ -67,11 +71,29 @@ func GetSymbolList(symbol model.Symbol) {
 	}
 
 	// 배열을 구조체로 변환
-	var candles []model.Candle
+	var candles []candle.Candle
 	for _, data := range rawData {
-		candle := model.NewCandle(data, symbol)
-		candles = append(candles, *candle)
+		newCandle := candle.NewCandle(data, symbol)
+		candles = append(candles, *newCandle)
 	}
 
-	repository.SaveCandleAll(&candles)
+	saveCandleAll(&candles)
+}
+
+// repo ##########
+// repo go의 package레이아웃을 잘 모르니끼 분리해야하면 그때 분리하자
+
+func getLastCandleOpenTime(symbol symbols.Symbol) int64 {
+	newCandle := candle.Candle{}
+	config.DB.Select("open_time").Where("symbol = ?", symbol.Code).Last(&newCandle)
+	return newCandle.OpenTime
+}
+
+func saveCandleAll(candles *[]candle.Candle) {
+	result := config.DB.Create(&candles)
+	if result.Error != nil {
+		fmt.Println("failed to insert users:", result.Error)
+	} else {
+		fmt.Printf("%d users inserted successfully.\n", result.RowsAffected)
+	}
 }

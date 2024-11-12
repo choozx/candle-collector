@@ -3,7 +3,7 @@ package main
 import (
 	"candle-collector/internal/config"
 	"candle-collector/internal/handler"
-	candleService "candle-collector/internal/service"
+	"candle-collector/internal/scheduler"
 	"fmt"
 	"github.com/robfig/cron/v3"
 	"net/http"
@@ -12,11 +12,9 @@ import (
 var c *cron.Cron
 
 func init() {
-	config.InitDB()
-
 	c := cron.New(cron.WithSeconds())
 
-	entryID, err := c.AddFunc("2 * * * * *", candleService.CandleUpdate)
+	entryID, err := c.AddFunc("2 * * * * *", scheduler.CandleUpdate)
 	if err != nil {
 		fmt.Println("Failed to add cron job:", err)
 		return

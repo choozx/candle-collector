@@ -8,7 +8,7 @@ import (
 
 var DB *gorm.DB
 
-func InitDB() {
+func init() {
 	var err error
 	dsn := getDBUrl()
 	DB, err = gorm.Open(mysql.Open(*dsn), &gorm.Config{})

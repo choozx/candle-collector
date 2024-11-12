@@ -1,21 +1,9 @@
-package model
+package candle
 
-import "strconv"
-
-const MaxUpdateCandleCount = 500
-
-type Symbol struct {
-	Code int
-	Name string
-}
-
-var (
-	BTCUSDT = Symbol{Code: 1, Name: "BTCUSDT"}
-	ETHUSDT = Symbol{Code: 2, Name: "ETHUSDT"}
-	TRXUSDT = Symbol{Code: 3, Name: "TRXUSDT"}
+import (
+	"candle-collector/internal/model/symbols"
+	"strconv"
 )
-
-var Symbols = []Symbol{BTCUSDT, ETHUSDT, TRXUSDT}
 
 type Candle struct {
 	OpenTime                 int64   `gorm:"column:open_time"`
@@ -32,7 +20,7 @@ type Candle struct {
 	TakerBuyQuoteAssetVolume float64 `gorm:"column:taker_buy_quote_asset_volume"`
 }
 
-func NewCandle(data []interface{}, symbol Symbol) *Candle {
+func NewCandle(data []interface{}, symbol symbols.Symbol) *Candle {
 	open, _ := strconv.ParseFloat(data[1].(string), 64)
 	high, _ := strconv.ParseFloat(data[2].(string), 64)
 	low, _ := strconv.ParseFloat(data[3].(string), 64)
@@ -61,8 +49,4 @@ func NewCandle(data []interface{}, symbol Symbol) *Candle {
 
 func (Candle) TableName() string {
 	return "candle"
-}
-
-func AddSymbol(symbol Symbol) {
-	Symbols = append(Symbols, symbol)
 }

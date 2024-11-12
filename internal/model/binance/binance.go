@@ -1,4 +1,4 @@
-package model
+package binance
 
 const BaseUrl = "https://fapi.binance.com/"
 
