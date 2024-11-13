@@ -22,6 +22,7 @@ func CandleUpdate() {
 	for _, symbol := range symbols.Symbols {
 		GetSymbolList(symbol)
 	}
+	fmt.Println("캔들 수집 완료")
 }
 
 func GetSymbolList(symbol symbols.Symbol) {
