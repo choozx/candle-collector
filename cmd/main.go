@@ -26,13 +26,6 @@ func init() {
 	fmt.Println("Cron job added with Entry ID:", entryID)
 	c.Start()
 
-	//cwd, err := os.Getwd()
-	//if err != nil {
-	//	fmt.Println("Error getting current directory:", err)
-	//} else {
-	//	fmt.Println("Current working directory:", cwd)
-	//}
-
 	err = godotenv.Load(".env")
 	if err != nil {
 		log.Fatalf("Error loading .env file")
