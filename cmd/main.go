@@ -3,9 +3,12 @@ package main
 import (
 	"candle-collector/internal/config"
 	"candle-collector/internal/handler"
+	"candle-collector/internal/model/symbols"
 	"candle-collector/internal/scheduler"
 	"fmt"
+	"github.com/joho/godotenv"
 	"github.com/robfig/cron/v3"
+	"log"
 	"net/http"
 )
 
@@ -22,6 +25,22 @@ func init() {
 
 	fmt.Println("Cron job added with Entry ID:", entryID)
 	c.Start()
+
+	//cwd, err := os.Getwd()
+	//if err != nil {
+	//	fmt.Println("Error getting current directory:", err)
+	//} else {
+	//	fmt.Println("Current working directory:", cwd)
+	//}
+
+	err = godotenv.Load(".env")
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+
+	config.InitDB()
+
+	symbols.InitCandle()
 }
 
 func main() {

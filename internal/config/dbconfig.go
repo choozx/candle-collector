@@ -1,14 +1,16 @@
 package config
 
 import (
+	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"log"
+	"os"
 )
 
 var DB *gorm.DB
 
-func init() {
+func InitDB() {
 	var err error
 	dsn := getDBUrl()
 	DB, err = gorm.Open(mysql.Open(*dsn), &gorm.Config{})
@@ -27,12 +29,14 @@ func CloseDB() {
 }
 
 func getDBUrl() *string {
-	id := "dale"
-	password := "0000"
-	host := "localhost"
-	port := "20003"
+	id := os.Getenv("DB_ID")
+	password := os.Getenv("DB_PASSWORD")
+	host := os.Getenv("DB_HOST")
+	port := os.Getenv("DB_PORT")
 
 	connectionUrl := id + ":" + password + "@tcp(" + host + ":" + port + ")/coin?charset=utf8mb4&parseTime=True&loc=Local"
+
+	fmt.Println(connectionUrl)
 
 	return &connectionUrl
 }

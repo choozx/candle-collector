@@ -15,7 +15,7 @@ type Symbol struct {
 
 var Symbols []Symbol
 
-func init() {
+func InitCandle() {
 	config.DB.Where("is_update=?", true).Find(&Symbols)
 	fmt.Println("Symbols:", Symbols)
 }
