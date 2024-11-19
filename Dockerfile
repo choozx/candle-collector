@@ -18,6 +18,8 @@ WORKDIR /dist
 RUN cp /build/main .
 
 FROM scratch
+# CA 인증서 복사
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /dist/main .
 COPY .env .
 ENTRYPOINT ["/main"]
