@@ -19,4 +19,5 @@ RUN cp /build/main .
 
 FROM scratch
 COPY --from=builder /dist/main .
+COPY .env .
 ENTRYPOINT ["/main"]
