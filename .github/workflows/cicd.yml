@@ -34,3 +34,17 @@ jobs:
           docker build -t app .
           docker tag app ${{ secrets.DOCKER_HUB_USERNAME }}/candle-collector:latest
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/candle-collector:latest
+
+      - name: Deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }} # EC2 인스턴스 퍼블릭 DNS
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }} # pem 키
+          # 도커 작업
+          script: |
+            docker stop collector
+            docker rm collector
+            docker rmi ${{ secrets.DOCKER_HUB_USERNAME }}/candle-collector:latest
+            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/candle-collector:latest
+            docker run -d -p 8081:8081 --name collector ${{ secrets.DOCKER_HUB_USERNAME }}/candle-collector:latest
