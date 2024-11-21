@@ -29,9 +29,15 @@ func SetSymbol(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	if requestSymbol.Name == "" {
+		writer.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	symbol := new(Symbol)
 	config.DB.Where("name = ?", requestSymbol.Name).First(symbol)
 	if symbol.IsUpdate == true {
+		writer.WriteHeader(http.StatusBadRequest)
 		return // 중복 등록 체크
 	}
 
