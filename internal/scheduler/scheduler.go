@@ -56,19 +56,19 @@ func GetSymbolList(symbol symbols.Symbol) {
 
 	resp, err := http.Get(u.String())
 	if err != nil {
-		log.Fatalf("GET request failed: %v", err)
+		log.Printf("GET request failed: %v", err)
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalf("Failed to read response body: %v", err)
+		log.Printf("Failed to read response body: %v", err)
 	}
 
 	// 2차원 배열로 파싱하기 위해 기본 타입을 사용
 	var rawData [][]interface{}
 	if err := json.Unmarshal(body, &rawData); err != nil {
-		log.Fatalf("Failed to parse JSON: %v", err)
+		log.Printf("Failed to parse JSON: %v", err)
 	}
 
 	// 배열을 구조체로 변환
