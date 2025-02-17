@@ -57,8 +57,13 @@ func GetSymbolList(symbol symbols.Symbol) {
 	resp, err := http.Get(u.String())
 	if err != nil {
 		log.Printf("GET request failed: %v", err)
+		return // 에러가 발생하면 함수를 종료
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if resp != nil {
+			resp.Body.Close() // resp가 nil이 아니면만 호출
+		}
+	}()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
