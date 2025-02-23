@@ -1,0 +1,3 @@
+package _const
+
+const ALREADY_RUNNING_PAST_CANDLE_COLLECT = 1002

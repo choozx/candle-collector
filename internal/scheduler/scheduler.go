@@ -2,6 +2,7 @@ package scheduler
 
 import (
 	"candle-collector/internal/config"
+	_const "candle-collector/internal/const"
 	"candle-collector/internal/model/binance"
 	"candle-collector/internal/model/candle"
 	"candle-collector/internal/model/symbols"
@@ -16,6 +17,8 @@ import (
 const MaxUpdateCandleCount = 500
 const MinOpenDateTime = "2022-01-01 00:00:00"
 const YyyyMmDdHhMmSs = "2006-01-02 15:04:05"
+
+var isRunningPastCandleCollector = false
 
 func CandleUpdate() {
 	for _, symbol := range symbols.Symbols {
@@ -38,6 +41,12 @@ func PastCandleUpdate(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	if isRunningPastCandleCollector {
+		writer.WriteHeader(_const.ALREADY_RUNNING_PAST_CANDLE_COLLECT)
+		return
+	}
+
+	isRunningPastCandleCollector = true
 	symbol := symbols.FindSymbol(requestSymbol.Name)
 
 	go UpdatePastCandle(*symbol)
@@ -77,17 +86,20 @@ func UpdatePastCandle(symbol symbols.Symbol) {
 		return
 	}
 
+	firstCandleOpenTime := getFirstCandleOpenTime(symbol) // 가장 오래된 캔들 오픈시간
+	if firstCandleOpenTime == 0 {
+		log.Printf("수집된적 없는 심볼입니다!")
+		return
+	}
+
 	for {
-		firstCandleOpenTime := getFirstCandleOpenTime(symbol) // 가장 오래된 캔들 오픈시간
-		if firstCandleOpenTime == 0 {
-			log.Printf("수집된적 없는 심볼입니다!")
-			return
-		}
 
 		if firstCandleOpenTime < t.UnixMilli() {
 			log.Printf("과거 캔들은 전부 수집된 심볼입니다.")
-			return
+			break
 		}
+
+		// TODO 상태 값으로 수집 종료 조건 추가
 
 		endTime := utils.Minus(firstCandleOpenTime, time.Minute)
 		startTime := utils.Minus(firstCandleOpenTime, time.Minute*MaxUpdateCandleCount)
@@ -107,6 +119,8 @@ func UpdatePastCandle(symbol symbols.Symbol) {
 		log.Printf("%v ~ %v 사이즈:%v", time.UnixMilli(candles[0].OpenTime), time.UnixMilli(candles[newCandleSize-1].OpenTime), newCandleSize)
 		time.Sleep(time.Minute) // 5초간 대기
 	}
+
+	isRunningPastCandleCollector = false
 }
 
 // repo ##########
