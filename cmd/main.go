@@ -26,8 +26,8 @@ func init() {
 	fmt.Println("Cron job added with Entry ID:", entryID)
 	c.Start()
 
-	err = godotenv.Load(".env")
-	if err != nil {
+	envErr := godotenv.Load(".env")
+	if envErr != nil {
 		log.Fatalf("Error loading .env file")
 	}
 

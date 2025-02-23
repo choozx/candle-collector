@@ -80,6 +80,15 @@ func DeleteSymbol(writer http.ResponseWriter, request *http.Request) {
 	config.DB.Where("name=?", symbol.Name).Save(symbol)
 }
 
+func FindSymbol(name string) *Symbol {
+	for _, s := range Symbols {
+		if s.Name == name {
+			return &s // 찾으면 포인터 반환
+		}
+	}
+	return nil
+}
+
 func (Symbol) TableName() string {
 	return "symbol"
 }
